@@ -1,0 +1,5 @@
+{
+  "name": "Smart Expense Tracker",
+  "description": "A modern, responsive web application for tracking income and expenses. It features a dashboard with insightful charts, transaction management, category organization, and detailed financial reports.",
+  "requestFramePermissions": []
+}

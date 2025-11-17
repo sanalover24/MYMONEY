@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Meta tags for a better mobile "Add to Home Screen" experience -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" id="theme-color-meta" content="#fafafa" /> <!-- Default light theme (zinc-50) -->
+    
+    <title>Smart Expense Tracker</title>
+    
+    <style>
+      /* New body style for light mode */
+      body {
+          transition: background-color 0.3s ease, color 0.3s ease;
+          background-color: #f0f4ff; /* A soft, light blue base */
+          background-image: 
+              radial-gradient(ellipse at 0% 0%, hsla(340, 90%, 95%, 0.6) 0px, transparent 50%),
+              radial-gradient(ellipse at 100% 0%, hsla(280, 90%, 95%, 0.6) 0px, transparent 50%),
+              radial-gradient(ellipse at 0% 100%, hsla(180, 90%, 95%, 0.6) 0px, transparent 50%),
+              radial-gradient(ellipse at 100% 100%, hsla(212, 90%, 95%, 0.6) 0px, transparent 50%);
+          background-attachment: fixed;
+      }
+      .dark body {
+          background-color: #0c0a09; /* Near-black with a hint of warmth */
+          /* A prominent warm glow on the top-right and a subtle cool glow on the bottom-left for balance */
+          background-image: 
+              radial-gradient(ellipse 70% 50% at 90% 20%, hsla(28, 80%, 57%, 0.18), transparent 70%),
+              radial-gradient(ellipse 50% 40% at 15% 85%, hsla(212, 80%, 57%, 0.1), transparent 70%);
+          background-attachment: fixed;
+      }
+
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+      }
+
+      @keyframes fade-in-up {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.2s ease-out forwards;
+        opacity: 0; /* Start hidden */
+      }
+      
+      @keyframes fade-in-down {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in-down {
+        animation: fade-in-down 0.2s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes slide-in-right {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .animate-slide-in-right {
+        animation: slide-in-right 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+      }
+      @keyframes fade-out {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+      .animate-fade-out {
+        animation: fade-out 0.5s ease-out forwards;
+      }
+      
+      @keyframes pop-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .animate-pop-in {
+        animation: pop-in 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+      }
+
+      /* Hide number input arrows */
+      /* Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      /* Firefox */
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+    </style>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                '50': '#fff4ed',
+                '100': '#ffe8d5',
+                '200': '#ffcfb0',
+                '300': '#ffb182',
+                '400': '#ff8851',
+                '500': '#ff672d',
+                '600': '#f5521b',
+                '700': '#ca3f15',
+                '800': '#a23216',
+                '900': '#832b17',
+                '950': '#461309'
+              },
+               zinc: {
+                  50: '#fafafa',
+                  100: '#f4f4f5',
+                  200: '#e4e4e7',
+                  300: '#d4d4d8',
+                  400: '#a1a1aa',
+                  500: '#71717a',
+                  600: '#52525b',
+                  700: '#3f3f46',
+                  800: '#27272a',
+                  900: '#18181b',
+                  950: '#09090b',
+                }
+            }
+          }
+        }
+      }
+    </script>
+
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Apply 'dark' if theme is 'dark', or if theme is 'system'/'null' and system prefers dark.
+        if (theme === 'dark' || (!theme || theme === 'system') && prefersDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.add('light');
+        }
+      })();
+    </script>
+    
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.5",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-zinc-100 dark:bg-zinc-950">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
