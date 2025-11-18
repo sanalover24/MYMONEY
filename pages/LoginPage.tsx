@@ -110,7 +110,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-900 dark:text-zinc-300">Remember me</label>
               </div>
               <div className="text-sm">
-                <Link to="#" className="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-500">Forgot password?</Link>
+                <Link to="/forgot-password" className="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-500">Forgot password?</Link>
               </div>
             </div>
 

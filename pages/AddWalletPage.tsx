@@ -34,8 +34,14 @@ const AddWalletPage: React.FC = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        if (loading) return;
+        
         if (formData.cardNumber.length !== 16) {
             addToast("Card number must be 16 digits.", 'error');
             return;
@@ -44,9 +50,17 @@ const AddWalletPage: React.FC = () => {
             addToast("Expiry date must be in MM/YY format.", 'error');
             return;
         }
-        addCard(formData);
-        addToast('New card added to wallet!', 'success');
-        navigate('/wallet');
+        
+        setLoading(true);
+        try {
+            await addCard(formData);
+            addToast('New card added to wallet!', 'success');
+            navigate('/wallet');
+        } catch (error: any) {
+            addToast(error.message || 'Failed to add card. Please try again.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const cardTypeOptions: SelectOption[] = [
@@ -95,9 +109,9 @@ const AddWalletPage: React.FC = () => {
                         </div>
                     </div>
                      <div className="p-4 bg-slate-50 dark:bg-zinc-900/50 border-t dark:border-zinc-800/80">
-                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3">
+                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3" disabled={loading}>
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
-                            Add Card
+                            {loading ? 'Adding...' : 'Add Card'}
                         </Button>
                     </div>
                 </form>

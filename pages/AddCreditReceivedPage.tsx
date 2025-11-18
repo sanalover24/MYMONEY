@@ -24,8 +24,14 @@ const AddCreditReceivedPage: React.FC = () => {
     const [cardId, setCardId] = useState('');
     const [note, setNote] = useState('');
     
-    const handleSubmit = (e: React.FormEvent) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        if (loading) return;
+        
         const creditAmount = parseFloat(amount);
         const returnDate = returnDateFilter.value as Date;
 
@@ -38,16 +44,23 @@ const AddCreditReceivedPage: React.FC = () => {
             return;
         }
 
-        addCreditReceivedEntry({
-            personName,
-            amount: creditAmount,
-            returnDate: toYYYYMMDD(returnDate),
-            initialPaymentMethod: paymentMethod,
-            initialCardId: paymentMethod === 'card' ? cardId : undefined,
-            initialNote: note,
-        });
-        addToast(`Credit from ${personName} added successfully!`, 'success');
-        navigate('/credit-received');
+        setLoading(true);
+        try {
+            await addCreditReceivedEntry({
+                personName,
+                amount: creditAmount,
+                returnDate: toYYYYMMDD(returnDate),
+                initialPaymentMethod: paymentMethod,
+                initialCardId: paymentMethod === 'card' ? cardId : undefined,
+                initialNote: note,
+            });
+            addToast(`Credit from ${personName} added successfully!`, 'success');
+            navigate('/credit-received');
+        } catch (error: any) {
+            addToast(error.message || 'Failed to add credit received. Please try again.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const paymentOptions = [
@@ -131,9 +144,9 @@ const AddCreditReceivedPage: React.FC = () => {
                         </div>
                     </div>
                      <div className="p-4 bg-slate-50 dark:bg-zinc-900/50 border-t dark:border-zinc-800/80">
-                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3">
+                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3" disabled={loading}>
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
-                            Add Credit
+                            {loading ? 'Adding...' : 'Add Credit'}
                         </Button>
                     </div>
                 </form>

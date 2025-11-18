@@ -43,8 +43,14 @@ const AddTransactionPage: React.FC = () => {
     }
   }, [paymentMethod]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (loading) return;
+    
     const transactionAmount = parseFloat(amount);
     if (!category || !transactionAmount || transactionAmount <= 0 || !dateFilter.value) {
         addToast("Please fill in all required fields.", 'error');
@@ -63,23 +69,31 @@ const AddTransactionPage: React.FC = () => {
         }
     }
     
-    const selectedDate = dateFilter.value as Date;
-    const currentTime = new Date();
-    const finalDate = new Date(selectedDate);
-    finalDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds(), currentTime.getMilliseconds());
+    setLoading(true);
     
-    addTransaction({
-      type,
-      category,
-      amount: transactionAmount,
-      date: finalDate.toISOString(),
-      note,
-      paymentMethod: paymentMethod,
-      cardId: paymentMethod === 'card' ? cardId : undefined,
-    });
-    
-    addToast('Transaction added successfully!', 'success');
-    navigate('/transactions');
+    try {
+      const selectedDate = dateFilter.value as Date;
+      const currentTime = new Date();
+      const finalDate = new Date(selectedDate);
+      finalDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds(), currentTime.getMilliseconds());
+      
+      await addTransaction({
+        type,
+        category,
+        amount: transactionAmount,
+        date: finalDate.toISOString(),
+        note,
+        paymentMethod: paymentMethod,
+        cardId: paymentMethod === 'card' ? cardId : undefined,
+      });
+      
+      addToast('Transaction added successfully!', 'success');
+      navigate('/transactions');
+    } catch (error: any) {
+      addToast(error.message || 'Failed to add transaction. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const typeOptions = [
@@ -170,9 +184,9 @@ const AddTransactionPage: React.FC = () => {
             </div>
           </div>
           <div className="p-4 bg-slate-50 dark:bg-zinc-900/50 border-t dark:border-zinc-800/80">
-            <Button type="submit" className="w-full flex items-center justify-center text-base py-3">
+            <Button type="submit" className="w-full flex items-center justify-center text-base py-3" disabled={loading}>
               <PlusCircleIcon className="w-5 h-5 mr-2" />
-              Add Transaction
+              {loading ? 'Adding...' : 'Add Transaction'}
             </Button>
           </div>
         </form>

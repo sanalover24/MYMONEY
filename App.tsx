@@ -10,6 +10,7 @@ import { authService } from './supabase/services';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import TransactionsPage from './pages/TransactionsPage';
 import AddTransactionPage from './pages/AddTransactionPage';
@@ -92,6 +93,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                 {isLoggedIn ? (
                   <Route path="/" element={<Layout onLogout={handleLogout} />}>

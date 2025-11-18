@@ -9,6 +9,13 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('receipts', 'receipts', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- Alternative method if the above doesn't work (use Supabase Dashboard instead):
+-- 1. Go to Storage in Supabase Dashboard
+-- 2. Click "New bucket"
+-- 3. Name: receipts
+-- 4. Check "Public bucket"
+-- 5. Click "Create bucket"
+
 -- Storage Policies for Receipts Bucket
 
 -- Allow authenticated users to upload their own receipts

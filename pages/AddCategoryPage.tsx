@@ -16,18 +16,30 @@ const AddCategoryPage: React.FC = () => {
     const [name, setName] = useState('');
     const [type, setType] = useState<TransactionType>('expense');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        if (loading) return;
+        
         if (!name) {
              addToast("Please enter a category name.", 'error');
              return;
         }
-        const success = addCategory({ name, type });
-        if (success) {
-            addToast('Category added successfully!', 'success');
-            navigate('/categories');
-        } else {
-            addToast(`A category named "${name}" for ${type} already exists.`, 'error');
+        
+        setLoading(true);
+        try {
+            const success = await addCategory({ name, type });
+            if (success) {
+                addToast('Category added successfully!', 'success');
+                navigate('/categories');
+            }
+        } catch (error: any) {
+            addToast(error.message || `A category named "${name}" for ${type} already exists.`, 'error');
+        } finally {
+            setLoading(false);
         }
     };
     
@@ -78,9 +90,9 @@ const AddCategoryPage: React.FC = () => {
                         </div>
                     </div>
                      <div className="p-4 bg-slate-50 dark:bg-zinc-900/50 border-t dark:border-zinc-800/80">
-                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3">
+                        <Button type="submit" className="w-full flex items-center justify-center text-base py-3" disabled={loading}>
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
-                            Add Category
+                            {loading ? 'Adding...' : 'Add Category'}
                         </Button>
                     </div>
                 </form>
