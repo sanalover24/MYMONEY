@@ -38,17 +38,23 @@ const AddCreditPage: React.FC = () => {
         const dueDate = dueDateFilter.value as Date;
 
         if (!personName || !creditAmount || !dueDate) {
-             addToast("Please fill in all required fields.", 'error');
+             if (typeof addToast === 'function') {
+                 addToast("Please fill in all required fields.", 'error');
+             }
              return;
         }
         if (paymentMethod === 'card' && !cardId) {
-            addToast("Please select a card.", 'error');
+            if (typeof addToast === 'function') {
+                addToast("Please select a card.", 'error');
+            }
             return;
         }
 
         const balance = paymentMethod === 'cash' ? balances.cash : (balances[cardId] || 0);
         if (balance < creditAmount) {
-            addToast("Insufficient balance to give this credit.", 'error');
+            if (typeof addToast === 'function') {
+                addToast("Insufficient balance to give this credit.", 'error');
+            }
             return;
         }
 
@@ -63,10 +69,29 @@ const AddCreditPage: React.FC = () => {
                 initialNote: note,
             });
 
-            addToast(`Credit for ${personName} added successfully!`, 'success');
+            if (typeof addToast === 'function') {
+                addToast(`Credit for ${personName} added successfully!`, 'success');
+            }
             navigate('/credit');
         } catch (error: any) {
-            addToast(error.message || 'Failed to add credit. Please try again.', 'error');
+            let errorMessage = 'Failed to add credit. Please try again.';
+            if (error) {
+                if (typeof error === 'string') {
+                    errorMessage = error;
+                } else if (error.message && typeof error.message === 'string') {
+                    errorMessage = error.message;
+                } else if (error.error && error.error.message && typeof error.error.message === 'string') {
+                    errorMessage = error.error.message;
+                } else if (error.details && typeof error.details === 'string') {
+                    errorMessage = error.details;
+                }
+            }
+            if (typeof addToast === 'function') {
+                addToast(errorMessage, 'error');
+            } else {
+                console.error('addToast is not a function');
+                console.error('Error:', errorMessage);
+            }
         } finally {
             setLoading(false);
         }

@@ -331,7 +331,11 @@ export const transactionService = {
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      const errorObj = new Error(error.message || 'Failed to create transaction');
+      (errorObj as any).originalError = error;
+      throw errorObj;
+    }
     return {
       id: data.id,
       type: data.type as TransactionType,

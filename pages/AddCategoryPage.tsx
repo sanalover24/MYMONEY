@@ -25,7 +25,9 @@ const AddCategoryPage: React.FC = () => {
         if (loading) return;
         
         if (!name) {
-             addToast("Please enter a category name.", 'error');
+             if (typeof addToast === 'function') {
+                 addToast("Please enter a category name.", 'error');
+             }
              return;
         }
         
@@ -33,11 +35,30 @@ const AddCategoryPage: React.FC = () => {
         try {
             const success = await addCategory({ name, type });
             if (success) {
-                addToast('Category added successfully!', 'success');
+                if (typeof addToast === 'function') {
+                    addToast('Category added successfully!', 'success');
+                }
                 navigate('/categories');
             }
         } catch (error: any) {
-            addToast(error.message || `A category named "${name}" for ${type} already exists.`, 'error');
+            let errorMessage = `A category named "${name}" for ${type} already exists.`;
+            if (error) {
+                if (typeof error === 'string') {
+                    errorMessage = error;
+                } else if (error.message && typeof error.message === 'string') {
+                    errorMessage = error.message;
+                } else if (error.error && error.error.message && typeof error.error.message === 'string') {
+                    errorMessage = error.error.message;
+                } else if (error.details && typeof error.details === 'string') {
+                    errorMessage = error.details;
+                }
+            }
+            if (typeof addToast === 'function') {
+                addToast(errorMessage, 'error');
+            } else {
+                console.error('addToast is not a function');
+                console.error('Error:', errorMessage);
+            }
         } finally {
             setLoading(false);
         }

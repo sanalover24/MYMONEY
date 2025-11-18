@@ -43,21 +43,44 @@ const AddWalletPage: React.FC = () => {
         if (loading) return;
         
         if (formData.cardNumber.length !== 16) {
-            addToast("Card number must be 16 digits.", 'error');
+            if (typeof addToast === 'function') {
+                addToast("Card number must be 16 digits.", 'error');
+            }
             return;
         }
         if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiryDate)) {
-            addToast("Expiry date must be in MM/YY format.", 'error');
+            if (typeof addToast === 'function') {
+                addToast("Expiry date must be in MM/YY format.", 'error');
+            }
             return;
         }
         
         setLoading(true);
         try {
             await addCard(formData);
-            addToast('New card added to wallet!', 'success');
+            if (typeof addToast === 'function') {
+                addToast('New card added to wallet!', 'success');
+            }
             navigate('/wallet');
         } catch (error: any) {
-            addToast(error.message || 'Failed to add card. Please try again.', 'error');
+            let errorMessage = 'Failed to add card. Please try again.';
+            if (error) {
+                if (typeof error === 'string') {
+                    errorMessage = error;
+                } else if (error.message && typeof error.message === 'string') {
+                    errorMessage = error.message;
+                } else if (error.error && error.error.message && typeof error.error.message === 'string') {
+                    errorMessage = error.error.message;
+                } else if (error.details && typeof error.details === 'string') {
+                    errorMessage = error.details;
+                }
+            }
+            if (typeof addToast === 'function') {
+                addToast(errorMessage, 'error');
+            } else {
+                console.error('addToast is not a function');
+                console.error('Error:', errorMessage);
+            }
         } finally {
             setLoading(false);
         }
