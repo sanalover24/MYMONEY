@@ -113,8 +113,15 @@ const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string
 
 const MonthSummaryCard: React.FC<{ transactions: Transaction[] }> = ({ transactions }) => {
   const summary = useMemo(() => {
-    const income = transactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum, 0);
-    const expense = transactions.reduce((sum, t) => t.type === 'expense' ? sum + t.amount : sum, 0);
+    const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+    const isCreditTransaction = (t: Transaction) => creditCategories.includes(t.category);
+    
+    const income = transactions
+      .filter(t => t.type === 'income' && !isCreditTransaction(t))
+      .reduce((sum, t) => sum + t.amount, 0);
+    const expense = transactions
+      .filter(t => t.type === 'expense' && !isCreditTransaction(t))
+      .reduce((sum, t) => sum + t.amount, 0);
     return { income, expense };
   }, [transactions]);
 
@@ -150,11 +157,14 @@ const TransactionsSidebar: React.FC = () => {
     const { balances, creditEntries, creditReceivedEntries, transactions } = useData();
 
     const { totalBalance, pendingCreditLent, pendingCreditReceived, todaysIncome, todaysExpense } = useMemo(() => {
+        const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+        const isCreditTransaction = (t: Transaction) => creditCategories.includes(t.category);
+        
         const totalBalance = Object.values(balances).reduce((sum: number, b: number) => sum + b, 0);
         const pendingCreditLent = creditEntries.filter(e => e.status !== 'completed').reduce((sum, e) => sum + (e.amount - e.returnedAmount), 0);
         const pendingCreditReceived = creditReceivedEntries.filter(e => e.status !== 'completed').reduce((sum, e) => sum + (e.amount - e.returnedAmount), 0);
         const todayStr = toYYYYMMDD(new Date());
-        const todaysTransactions = transactions.filter(t => toYYYYMMDD(new Date(t.date)) === todayStr);
+        const todaysTransactions = transactions.filter(t => toYYYYMMDD(new Date(t.date)) === todayStr && !isCreditTransaction(t));
         const todaysIncome = todaysTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
         const todaysExpense = todaysTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
         return { totalBalance, pendingCreditLent, pendingCreditReceived, todaysIncome, todaysExpense };

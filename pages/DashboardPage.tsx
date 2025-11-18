@@ -74,6 +74,9 @@ const DashboardPage: React.FC = () => {
     }, [creditReceivedEntries]);
     
     const weeklySpending = useMemo(() => {
+        const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+        const isCreditTransaction = (t: any) => creditCategories.includes(t.category);
+        
         const data: { name: string, expense: number, income: number }[] = [];
         const today = new Date();
         today.setHours(23, 59, 59, 999);
@@ -84,8 +87,12 @@ const DashboardPage: React.FC = () => {
             const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
             const dayStr = toYYYYMMDD(date);
             
-            const dailyExpense = transactions.filter(t => toYYYYMMDD(new Date(t.date)) === dayStr && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const dailyIncome = transactions.filter(t => toYYYYMMDD(new Date(t.date)) === dayStr && t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const dailyExpense = transactions
+                .filter(t => toYYYYMMDD(new Date(t.date)) === dayStr && t.type === 'expense' && !isCreditTransaction(t))
+                .reduce((sum, t) => sum + t.amount, 0);
+            const dailyIncome = transactions
+                .filter(t => toYYYYMMDD(new Date(t.date)) === dayStr && t.type === 'income' && !isCreditTransaction(t))
+                .reduce((sum, t) => sum + t.amount, 0);
             data.push({ name: dayName, expense: dailyExpense, income: dailyIncome });
         }
         return data;

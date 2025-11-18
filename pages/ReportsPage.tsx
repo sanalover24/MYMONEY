@@ -4,6 +4,7 @@ import Card from '../components/ui/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import PremierDatePicker, { DateFilter } from '../components/ui/PremierCalendar';
 import { toYYYYMMDD, isSameDay } from '../utils/date';
+import { Transaction } from '../types';
 
 const ReportsPage: React.FC = () => {
   const { transactions } = useData();
@@ -41,10 +42,14 @@ const ReportsPage: React.FC = () => {
   }, [transactions, dateFilter]);
 
   const summary = useMemo(() => {
-    const income = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+    const isCreditTransaction = (t: Transaction) => creditCategories.includes(t.category);
+    
+    const nonCreditTransactions = filteredTransactions.filter(t => !isCreditTransaction(t));
+    const income = nonCreditTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const expense = nonCreditTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const expenseByCategory: { [key: string]: number } = {};
-    filteredTransactions.filter(t => t.type === 'expense').forEach(t => {
+    nonCreditTransactions.filter(t => t.type === 'expense').forEach(t => {
         if(!expenseByCategory[t.category]) expenseByCategory[t.category] = 0;
         expenseByCategory[t.category] += t.amount;
     });
@@ -80,13 +85,16 @@ const ReportsPage: React.FC = () => {
     const data: { name: string, income: number, expense: number }[] = [];
     let currentDate = new Date(startDate);
 
+    const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+    const isCreditTransaction = (t: Transaction) => creditCategories.includes(t.category);
+
     while (currentDate <= endDate) {
         const dateStr = toYYYYMMDD(currentDate);
         const dailyIncome = transactions
-            .filter(t => toYYYYMMDD(new Date(t.date)) === dateStr && t.type === 'income')
+            .filter(t => toYYYYMMDD(new Date(t.date)) === dateStr && t.type === 'income' && !isCreditTransaction(t))
             .reduce((sum, t) => sum + t.amount, 0);
         const dailyExpense = transactions
-            .filter(t => toYYYYMMDD(new Date(t.date)) === dateStr && t.type === 'expense')
+            .filter(t => toYYYYMMDD(new Date(t.date)) === dateStr && t.type === 'expense' && !isCreditTransaction(t))
             .reduce((sum, t) => sum + t.amount, 0);
 
         data.push({
@@ -100,11 +108,16 @@ const ReportsPage: React.FC = () => {
   }, [transactions, dateFilter]);
   
   const pieData = useMemo(() => {
+    const creditCategories = ['Credit', 'Credit Return', 'Credit Received', 'Credit Return Paid'];
+    const isCreditTransaction = (t: Transaction) => creditCategories.includes(t.category);
+    
     const categoryMap: { [key: string]: number } = {};
-    filteredTransactions.filter(t => t.type === 'expense').forEach(t => {
-        if (!categoryMap[t.category]) categoryMap[t.category] = 0;
-        categoryMap[t.category] += t.amount;
-    });
+    filteredTransactions
+        .filter(t => t.type === 'expense' && !isCreditTransaction(t))
+        .forEach(t => {
+            if (!categoryMap[t.category]) categoryMap[t.category] = 0;
+            categoryMap[t.category] += t.amount;
+        });
     return Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
   }, [filteredTransactions]);
 
