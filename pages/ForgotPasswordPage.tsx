@@ -48,7 +48,7 @@ const ForgotPasswordPage: React.FC = () => {
           <p className="text-zinc-600 dark:text-zinc-400 text-center mb-6">
             {emailSent 
               ? 'Check your email for a password reset link.'
-              : 'Enter your email address and we'll send you a link to reset your password.'}
+              : "Enter your email address and we'll send you a link to reset your password."}
           </p>
           
           {!emailSent ? (
@@ -77,7 +77,7 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="text-center space-y-4">
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  We've sent a password reset link to <strong>{email}</strong>. 
+                  We&apos;ve sent a password reset link to <strong>{email}</strong>. 
                   Please check your email and click the link to reset your password.
                 </p>
               </div>
